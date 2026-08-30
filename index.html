@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سوبر ماركت ابو  العمدة - فتحي أبو العمدة</title>
+    <title>سوبر ماركت ابو العمدة - فتحي أبو العمدة</title>
     
+    <!-- مكتبات Firebase 8.x -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
         :root {
             --primary-color: #0d5c3a;
@@ -252,6 +256,13 @@
     </footer>
 
     <script>
+        // إعدادات Firebase
+        const firebaseConfig = {
+            databaseURL: "https://abo-elamda-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         // رقم الواتساب الخاص بك
         const MY_WHATSAPP_NUMBER = "201126761850";
 
@@ -269,9 +280,22 @@
             { id: 5, name: "كارت شحن فودافون (100 ج.م)", price: 100, category: "cash", img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=300&q=80" }
         ];
 
-        let products = JSON.parse(localStorage.getItem('alamda_products')) || defaultProducts;
+        let products = [];
         let cart = [];
         let currentCategory = 'all';
+
+        // المزامنة اللحظية مع Firebase Realtime Database
+        db.ref('products').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                products = Array.isArray(data) ? data : Object.values(data);
+            } else {
+                products = defaultProducts;
+                db.ref('products').set(defaultProducts);
+            }
+            refreshMainView();
+            if (isAdminLoggedIn) renderAdminList();
+        });
 
         function displayProducts(items) {
             const grid = document.getElementById('products-list');
@@ -401,12 +425,10 @@
                     };
 
                     products.push(newProduct);
-                    saveToLocalStorage();
+                    db.ref('products').set(products);
                     
                     document.querySelector('.add-product-form').reset();
-                    renderAdminList();
-                    refreshMainView();
-                    alert('تمت إضافة المنتج بالصورة بنجاح! ✨');
+                    alert('تمت إضافة المنتج بالصورة بنجاح وحفظه أونلاين! ✨');
                 };
                 reader.readAsDataURL(file);
             }
@@ -415,9 +437,7 @@
         function deleteProduct(id) {
             if(confirm('هل أنت تأكد من حذف هذا المنتج؟')) {
                 products = products.filter(p => p.id !== id);
-                saveToLocalStorage();
-                renderAdminList();
-                refreshMainView();
+                db.ref('products').set(products);
             }
         }
 
@@ -426,13 +446,8 @@
                 const input = document.getElementById(`price-input-${p.id}`);
                 if (input) p.price = parseFloat(input.value) || 0;
             });
-            saveToLocalStorage();
-            refreshMainView();
-            alert('تم حفظ التغييرات بنجاح! 🎉');
-        }
-
-        function saveToLocalStorage() {
-            localStorage.setItem('alamda_products', JSON.stringify(products));
+            db.ref('products').set(products);
+            alert('تم حفظ التغييرات بنجاح للجميع! 🎉');
         }
 
         function refreshMainView() {
@@ -458,8 +473,6 @@
 
             window.open(`https://wa.me/${MY_WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`, '_blank');
         }
-
-        displayProducts(products);
     </script>
 </body>
 </html>
