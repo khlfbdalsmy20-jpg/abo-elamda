@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سوبر ماركت ابو  العمدة - فتحي أبو العمدة</title>
+    
+    <style>
+        :root {
+            --primary-color: #0d5c3a;
+            --primary-hover: #083f27;
+            --accent-color: #ffb703;
+            --accent-hover: #fb8500;
+            --danger-color: #e63946;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #2b2d42;
+            --shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); direction: rtl; }
+
+        .header { 
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)); 
+            color: white; 
+            padding: 20px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 1.8rem; font-weight: 700; }
+        .admin-toggle-btn { 
+            background: var(--accent-color); 
+            color: #1a1a1a; 
+            border: none; 
+            padding: 10px 20px; 
+            font-weight: bold; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            transition: var(--transition);
+        }
+        .admin-toggle-btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
+
+        .admin-panel { 
+            background: #fff; 
+            border-right: 5px solid var(--accent-color); 
+            padding: 25px; 
+            margin: 20px auto; 
+            max-width: 1300px; 
+            border-radius: 12px; 
+            box-shadow: var(--shadow);
+        }
+        .admin-panel.hidden { display: none; }
+        .admin-section-title { margin-bottom: 15px; color: var(--primary-color); border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        
+        .add-product-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .add-product-form input, .add-product-form select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+            background: white;
+        }
+        .add-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 12px;
+        }
+        .add-btn:hover { background: var(--primary-hover); }
+
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin: 15px 0; max-height: 300px; overflow-y: auto; }
+        .admin-item { background: var(--bg-color); padding: 10px 15px; border-radius: 8px; border: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .admin-item input { width: 80px; padding: 6px; text-align: center; border: 1px solid #ccc; border-radius: 5px; font-weight: bold; }
+        .delete-btn { background: var(--danger-color); color: white; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
+        .save-admin-btn { background: var(--accent-color); color: #1a1a1a; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: var(--transition); width: 100%; margin-top: 10px; }
+        .save-admin-btn:hover { background: var(--accent-hover); }
+
+        .container { display: flex; gap: 25px; padding: 25px; max-width: 1300px; margin: 0 auto; }
+        .main-content { flex: 3; }
+
+        .category-tabs { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .tab-btn { 
+            padding: 12px 22px; 
+            border: 1px solid #ddd; 
+            background: white; 
+            color: var(--text-color);
+            border-radius: 30px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: var(--transition);
+        }
+        .tab-btn:hover { background: #eee; }
+        .tab-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 10px rgba(13, 92, 58, 0.2); }
+        .tab-btn.cash-tab { background: #fff3e0; color: #e65100; border-color: #ffe0b2; }
+        .tab-btn.cash-tab.active { background: #e65100; color: white; }
+
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 20px; }
+        .card { 
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            box-shadow: var(--shadow);
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            text-align: center; 
+            transition: var(--transition);
+        }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.12); }
+        .card img { width: 100%; height: 140px; object-fit: cover; }
+        .card-body { padding: 15px; }
+        .card-title { font-size: 1rem; font-weight: bold; margin-bottom: 8px; height: 40px; }
+        .card-price { color: var(--primary-color); font-size: 1.1rem; font-weight: 800; margin-bottom: 12px; }
+        .add-cart-btn { 
+            width: 100%; 
+            background: var(--primary-color); 
+            color: white; 
+            border: none; 
+            padding: 10px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: var(--transition);
+        }
+        .add-cart-btn:hover { background: var(--primary-hover); }
+
+        .cart-section { 
+            flex: 1.2; 
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: var(--shadow); 
+            height: fit-content; 
+            position: sticky; 
+            top: 25px; 
+        }
+        .cart-items { margin: 15px 0; max-height: 250px; overflow-y: auto; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
+        .qty-controls button { width: 26px; height: 26px; background: #e0e0e0; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        .total-price-box { display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: 800; margin: 20px 0; color: var(--primary-color); }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; }
+        .whatsapp-submit-btn { 
+            width: 100%; 
+            background: #25d366; 
+            color: white; 
+            border: none; 
+            padding: 14px; 
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: var(--transition);
+        }
+        .whatsapp-submit-btn:hover { background: #1ebd56; transform: scale(1.02); }
+
+        footer { text-align: center; padding: 20px; background: #1a1a1a; color: #888; margin-top: 40px; }
+        @media (max-width: 768px) { .container { flex-direction: column; } .cart-section { position: static; } }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="brand">
+            <h1>🏪 سوبر ماركت ابو العمدة</h1>
+            <p>إدارة: فتحي أبو العمدة | بقالة - خضار وفواكه - كاش وشحن</p>
+        </div>
+        <button class="admin-toggle-btn" onclick="toggleAdminPanel()">⚙️ لوحة التحكم وإضافة منتجات</button>
+    </header>
+
+    <section id="admin-panel" class="admin-panel hidden">
+        <h2 class="admin-section-title">➕ إضافة منتج جديد (مع رفع صورة)</h2>
+        <form class="add-product-form" onsubmit="addNewProduct(event)">
+            <input type="text" id="new-p-name" placeholder="اسم المنتج" required>
+            <input type="number" id="new-p-price" placeholder="السعر (ج.م)" required>
+            <select id="new-p-cat" required>
+                <option value="grocery">🛒 البقالة الكاملة</option>
+                <option value="fresh">🥦 خضروات وفواكه</option>
+                <option value="cash">⚡ كروت شحن وكاش</option>
+            </select>
+            <input type="file" id="new-p-file" accept="image/*" required>
+            <button type="submit" class="add-btn">إضافة المنتج ➕</button>
+        </form>
+
+        <h2 class="admin-section-title">🛠️ تعديل الأسعار أو حذف منتجات</h2>
+        <div id="admin-products-list" class="admin-grid"></div>
+        <button class="save-admin-btn" onclick="saveNewPrices()">💾 حفظ التغييرات</button>
+    </section>
+
+    <div class="container">
+        <main class="main-content">
+            <div class="category-tabs">
+                <button class="tab-btn active" onclick="filterCategory('all', this)">كل المنتجات والخدمات</button>
+                <button class="tab-btn" onclick="filterCategory('grocery', this)">🛒 البقالة الكاملة</button>
+                <button class="tab-btn" onclick="filterCategory('fresh', this)">🥦 خضروات وفواكه</button>
+                <button class="tab-btn cash-tab" onclick="filterCategory('cash', this)">⚡ كروت شحن وكاش</button>
+            </div>
+
+            <div id="products-list" class="products-grid"></div>
+        </main>
+
+        <aside class="cart-section">
+            <h2>🛒 سلة المشتريات</h2>
+            <div id="cart-items" class="cart-items">
+                <p class="empty-msg">السلة فارغة حالياً، اختر منتجاتك للبدء.</p>
+            </div>
+
+            <div class="cart-footer">
+                <div class="total-price-box">
+                    <span>الإجمالي:</span>
+                    <span id="total-amount">0 ج.م</span>
+                </div>
+
+                <form id="checkout-form" onsubmit="sendOrderToWhatsApp(event)">
+                    <div class="form-group">
+                        <input type="text" id="cust-name" placeholder="الاسم بالكامل" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" id="cust-phone" placeholder="رقم الموبايل" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="cust-address" placeholder="العنوان التفصيلي" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="cust-notes" rows="2" placeholder="ملاحظات (مثل: رقم التحويل للكاش / تفاصيل الشحن)"></textarea>
+                    </div>
+                    <button type="submit" class="whatsapp-submit-btn">إرسال الطلب للواتساب 💬</button>
+                </form>
+            </div>
+        </aside>
+    </div>
+
+    <footer>
+        <p>جميع الحقوق محفوظة © سوبر ماركت أولاد العمدة (فتحي أبو العمدة)</p>
+    </footer>
+
+    <script>
+        // رقم الواتساب الخاص بك
+        const MY_WHATSAPP_NUMBER = "201126761850";
+
+        // بيانات الدخول للوحة التحكم
+        const ADMIN_USERNAME = "admin";
+        const ADMIN_PASSWORD = "Std#123456";
+
+        let isAdminLoggedIn = false;
+
+        const defaultProducts = [
+            { id: 1, name: "زيت طعام هلا 1 لتر", price: 65, category: "grocery", img: "https://images.unsplash.com/photo-1620706857370-e1b9770e8bb1?auto=format&fit=crop&w=300&q=80" },
+            { id: 2, name: "سكر الأهرام 1 كجم", price: 38, category: "grocery", img: "https://images.unsplash.com/photo-1581441363689-1f3c3c414635?auto=format&fit=crop&w=300&q=80" },
+            { id: 3, name: "شاي العروسة 250 جرام", price: 50, category: "grocery", img: "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&w=300&q=80" },
+            { id: 4, name: "طماطم بلدي (1 كجم)", price: 18, category: "fresh", img: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=300&q=80" },
+            { id: 5, name: "كارت شحن فودافون (100 ج.م)", price: 100, category: "cash", img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=300&q=80" }
+        ];
+
+        let products = JSON.parse(localStorage.getItem('alamda_products')) || defaultProducts;
+        let cart = [];
+        let currentCategory = 'all';
+
+        function displayProducts(items) {
+            const grid = document.getElementById('products-list');
+            grid.innerHTML = items.map(product => `
+                <div class="card">
+                    <img src="${product.img}" alt="${product.name}">
+                    <div class="card-body">
+                        <div class="card-title">${product.name}</div>
+                        <div class="card-price">${product.price > 0 ? product.price + ' ج.م' : 'حدد المبلغ بالملاحظات'}</div>
+                        <button class="add-cart-btn" onclick="addToCart(${product.id})">إضافة للسلة 🛒</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterCategory(cat, element) {
+            currentCategory = cat;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            displayProducts(cat === 'all' ? products : products.filter(p => p.category === cat));
+        }
+
+        function addToCart(id) {
+            const item = products.find(p => p.id === id);
+            const inCart = cart.find(c => c.id === id);
+            if (inCart) { inCart.qty++; } else { cart.push({ ...item, qty: 1 }); }
+            renderCart();
+        }
+
+        function updateQty(id, change) {
+            const inCart = cart.find(c => c.id === id);
+            if (!inCart) return;
+            inCart.qty += change;
+            if (inCart.qty <= 0) { cart = cart.filter(c => c.id !== id); }
+            renderCart();
+        }
+
+        function renderCart() {
+            const cartBox = document.getElementById('cart-items');
+            const totalBox = document.getElementById('total-amount');
+
+            if (cart.length === 0) {
+                cartBox.innerHTML = `<p class="empty-msg">السلة فارغة حالياً، اختر منتجاتك للبدء.</p>`;
+                totalBox.innerText = "0 ج.م";
+                return;
+            }
+
+            let total = 0;
+            cartBox.innerHTML = cart.map(item => {
+                total += item.price * item.qty;
+                return `
+                    <div class="cart-item">
+                        <div>
+                            <strong>${item.name}</strong><br>
+                            <small>${item.price > 0 ? (item.price * item.qty) + ' ج.م' : 'خدمة كاش'}</small>
+                        </div>
+                        <div class="qty-controls">
+                            <button onclick="updateQty(${item.id}, -1)">-</button>
+                            <span>${item.qty}</span>
+                            <button onclick="updateQty(${item.id}, 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            totalBox.innerText = `${total} ج.م`;
+        }
+
+        function toggleAdminPanel() {
+            const panel = document.getElementById('admin-panel');
+
+            if (!panel.classList.contains('hidden')) {
+                panel.classList.add('hidden');
+                return;
+            }
+
+            if (!isAdminLoggedIn) {
+                const user = prompt("أدخل اسم المستخدم للوحة التحكم:");
+                if (user === null) return;
+
+                const pass = prompt("أدخل كلمة السر:");
+                if (pass === null) return;
+
+                if (user === ADMIN_USERNAME && pass === ADMIN_PASSWORD) {
+                    isAdminLoggedIn = true;
+                    alert("تم تسجيل الدخول بنجاح! 🔓");
+                } else {
+                    alert("⚠️ اسم المستخدم أو كلمة السر غير صحيحة!");
+                    return;
+                }
+            }
+
+            panel.classList.remove('hidden');
+            renderAdminList();
+        }
+
+        function renderAdminList() {
+            const list = document.getElementById('admin-products-list');
+            list.innerHTML = products.map(p => `
+                <div class="admin-item">
+                    <span>${p.name}</span>
+                    <div>
+                        <input type="number" id="price-input-${p.id}" value="${p.price}">
+                        <button class="delete-btn" onclick="deleteProduct(${p.id})">حذف 🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addNewProduct(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-p-name').value;
+            const price = parseFloat(document.getElementById('new-p-price').value) || 0;
+            const category = document.getElementById('new-p-cat').value;
+            const fileInput = document.getElementById('new-p-file');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const newProduct = {
+                        id: Date.now(),
+                        name: name,
+                        price: price,
+                        category: category,
+                        img: e.target.result
+                    };
+
+                    products.push(newProduct);
+                    saveToLocalStorage();
+                    
+                    document.querySelector('.add-product-form').reset();
+                    renderAdminList();
+                    refreshMainView();
+                    alert('تمت إضافة المنتج بالصورة بنجاح! ✨');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function deleteProduct(id) {
+            if(confirm('هل أنت تأكد من حذف هذا المنتج؟')) {
+                products = products.filter(p => p.id !== id);
+                saveToLocalStorage();
+                renderAdminList();
+                refreshMainView();
+            }
+        }
+
+        function saveNewPrices() {
+            products.forEach(p => {
+                const input = document.getElementById(`price-input-${p.id}`);
+                if (input) p.price = parseFloat(input.value) || 0;
+            });
+            saveToLocalStorage();
+            refreshMainView();
+            alert('تم حفظ التغييرات بنجاح! 🎉');
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('alamda_products', JSON.stringify(products));
+        }
+
+        function refreshMainView() {
+            displayProducts(currentCategory === 'all' ? products : products.filter(p => p.category === currentCategory));
+            renderCart();
+        }
+
+        function sendOrderToWhatsApp(e) {
+            e.preventDefault();
+            if (cart.length === 0) return alert("اختر منتجات أولاً بالسلة!");
+
+            const name = document.getElementById('cust-name').value;
+            const phone = document.getElementById('cust-phone').value;
+            const address = document.getElementById('cust-address').value;
+            const notes = document.getElementById('cust-notes').value;
+
+            let text = `🛒 *طلب جديد - سوبر ماركت أولاد العمدة*\n👤 *الاسم:* ${name}\n📞 *الهاتف:* ${phone}\n📍 *العنوان:* ${address}\n`;
+            if(notes) text += `📝 *ملاحظات:* ${notes}\n`;
+            text += `-----------------------------------\n📦 *الطلبات:*\n`;
+
+            cart.forEach(i => { text += `- ${i.name} (عدد: ${i.qty})\n`; });
+            text += `-----------------------------------\n💰 *الإجمالي:* ${document.getElementById('total-amount').innerText}`;
+
+            window.open(`https://wa.me/${MY_WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        displayProducts(products);
+    </script>
+</body>
+</html>
