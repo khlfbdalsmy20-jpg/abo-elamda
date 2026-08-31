@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سوبر ماركت ابو العمدة - فتحي أبو العمدة</title>
     
-    <!-- مكتبات Firebase 8.x -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -22,10 +22,8 @@
             --shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
             --transition: all 0.3s ease;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-color); direction: rtl; }
-
         .header { 
             background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)); 
             color: white; 
@@ -49,7 +47,6 @@
             transition: var(--transition);
         }
         .admin-toggle-btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
-
         .admin-panel { 
             background: #fff; 
             border-right: 5px solid var(--accent-color); 
@@ -89,17 +86,14 @@
             padding: 12px;
         }
         .add-btn:hover { background: var(--primary-hover); }
-
         .admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin: 15px 0; max-height: 300px; overflow-y: auto; }
         .admin-item { background: var(--bg-color); padding: 10px 15px; border-radius: 8px; border: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
         .admin-item input { width: 80px; padding: 6px; text-align: center; border: 1px solid #ccc; border-radius: 5px; font-weight: bold; }
         .delete-btn { background: var(--danger-color); color: white; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
         .save-admin-btn { background: var(--accent-color); color: #1a1a1a; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: var(--transition); width: 100%; margin-top: 10px; }
         .save-admin-btn:hover { background: var(--accent-hover); }
-
         .container { display: flex; gap: 25px; padding: 25px; max-width: 1300px; margin: 0 auto; }
         .main-content { flex: 3; }
-
         .category-tabs { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
         .tab-btn { 
             padding: 12px 22px; 
@@ -115,7 +109,6 @@
         .tab-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 10px rgba(13, 92, 58, 0.2); }
         .tab-btn.cash-tab { background: #fff3e0; color: #e65100; border-color: #ffe0b2; }
         .tab-btn.cash-tab.active { background: #e65100; color: white; }
-
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 20px; }
         .card { 
             background: var(--card-bg); 
@@ -145,7 +138,6 @@
             transition: var(--transition);
         }
         .add-cart-btn:hover { background: var(--primary-hover); }
-
         .cart-section { 
             flex: 1.2; 
             background: white; 
@@ -174,13 +166,11 @@
             transition: var(--transition);
         }
         .whatsapp-submit-btn:hover { background: #1ebd56; transform: scale(1.02); }
-
         footer { text-align: center; padding: 20px; background: #1a1a1a; color: #888; margin-top: 40px; }
         @media (max-width: 768px) { .container { flex-direction: column; } .cart-section { position: static; } }
     </style>
 </head>
 <body>
-
     <header class="header">
         <div class="brand">
             <h1>🏪 سوبر ماركت ابو العمدة</h1>
@@ -191,7 +181,7 @@
 
     <section id="admin-panel" class="admin-panel hidden">
         <h2 class="admin-section-title">➕ إضافة منتج جديد (مع رفع صورة)</h2>
-        <form class="add-product-form" onsubmit="addNewProduct(event)">
+        <form class="add-product-form" id="addProductForm">
             <input type="text" id="new-p-name" placeholder="اسم المنتج" required>
             <input type="number" id="new-p-price" placeholder="السعر (ج.م)" required>
             <select id="new-p-cat" required>
@@ -200,9 +190,8 @@
                 <option value="cash">⚡ كروت شحن وكاش</option>
             </select>
             <input type="file" id="new-p-file" accept="image/*" required>
-            <button type="submit" class="add-btn">إضافة المنتج ➕</button>
+            <button type="button" id="add-submit-btn" onclick="addNewProduct()" class="add-btn">إضافة المنتج ➕</button>
         </form>
-
         <h2 class="admin-section-title">🛠️ تعديل الأسعار أو حذف منتجات</h2>
         <div id="admin-products-list" class="admin-grid"></div>
         <button class="save-admin-btn" onclick="saveNewPrices()">💾 حفظ التغييرات</button>
@@ -216,8 +205,7 @@
                 <button class="tab-btn" onclick="filterCategory('fresh', this)">🥦 خضروات وفواكه</button>
                 <button class="tab-btn cash-tab" onclick="filterCategory('cash', this)">⚡ كروت شحن وكاش</button>
             </div>
-
-            <div id="products-list" class="products-grid"></div>
+            <div id="products-list" class="products-grid">جاري تحميل المنتجات...</div>
         </main>
 
         <aside class="cart-section">
@@ -225,13 +213,11 @@
             <div id="cart-items" class="cart-items">
                 <p class="empty-msg">السلة فارغة حالياً، اختر منتجاتك للبدء.</p>
             </div>
-
             <div class="cart-footer">
                 <div class="total-price-box">
                     <span>الإجمالي:</span>
                     <span id="total-amount">0 ج.م</span>
                 </div>
-
                 <form id="checkout-form" onsubmit="sendOrderToWhatsApp(event)">
                     <div class="form-group">
                         <input type="text" id="cust-name" placeholder="الاسم بالكامل" required>
@@ -256,42 +242,35 @@
     </footer>
 
     <script>
-        // إعدادات Firebase
-        const firebaseConfig = {
-            databaseURL: "https://abo-elamda-default-rtdb.firebaseio.com"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // رقم الواتساب الخاص بك
         const MY_WHATSAPP_NUMBER = "201126761850";
-
-        // بيانات الدخول للوحة التحكم
         const ADMIN_USERNAME = "admin";
         const ADMIN_PASSWORD = "Std#123456";
-
         let isAdminLoggedIn = false;
 
-        const defaultProducts = [
-            { id: 1, name: "زيت طعام هلا 1 لتر", price: 65, category: "grocery", img: "https://images.unsplash.com/photo-1620706857370-e1b9770e8bb1?auto=format&fit=crop&w=300&q=80" },
-            { id: 2, name: "سكر الأهرام 1 كجم", price: 38, category: "grocery", img: "https://images.unsplash.com/photo-1581441363689-1f3c3c414635?auto=format&fit=crop&w=300&q=80" },
-            { id: 3, name: "شاي العروسة 250 جرام", price: 50, category: "grocery", img: "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&w=300&q=80" },
-            { id: 4, name: "طماطم بلدي (1 كجم)", price: 18, category: "fresh", img: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=300&q=80" },
-            { id: 5, name: "كارت شحن فودافون (100 ج.م)", price: 100, category: "cash", img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=300&q=80" }
-        ];
+        const firebaseConfig = {
+            apiKey: "AIzaSyDsWBHP600b1hnr7Vys4TpbAN5-P6sYesc",
+            authDomain: "abo-elamda.firebaseapp.com",
+            databaseURL: "https://abo-elamda-default-rtdb.firebaseio.com",
+            projectId: "abo-elamda",
+            storageBucket: "abo-elamda.firebasestorage.app",
+            messagingSenderId: "382409171546",
+            appId: "1:382409171546:web:99b1863370ffd8166fee63",
+            measurementId: "G-87GFWKL15H"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
         let products = [];
         let cart = [];
         let currentCategory = 'all';
 
-        // المزامنة اللحظية مع Firebase Realtime Database
         db.ref('products').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                products = Array.isArray(data) ? data : Object.values(data);
-            } else {
-                products = defaultProducts;
-                db.ref('products').set(defaultProducts);
+            products = [];
+            if (snapshot.exists()) {
+                snapshot.forEach((child) => {
+                    products.push({ id: child.key, ...child.val() });
+                });
             }
             refreshMainView();
             if (isAdminLoggedIn) renderAdminList();
@@ -299,13 +278,17 @@
 
         function displayProducts(items) {
             const grid = document.getElementById('products-list');
+            if(items.length === 0) {
+                grid.innerHTML = '<p>لا توجد منتجات في هذا القسم حالياً.</p>';
+                return;
+            }
             grid.innerHTML = items.map(product => `
                 <div class="card">
                     <img src="${product.img}" alt="${product.name}">
                     <div class="card-body">
                         <div class="card-title">${product.name}</div>
                         <div class="card-price">${product.price > 0 ? product.price + ' ج.م' : 'حدد المبلغ بالملاحظات'}</div>
-                        <button class="add-cart-btn" onclick="addToCart(${product.id})">إضافة للسلة 🛒</button>
+                        <button class="add-cart-btn" onclick="addToCart('${product.id}')">إضافة للسلة 🛒</button>
                     </div>
                 </div>
             `).join('');
@@ -336,13 +319,11 @@
         function renderCart() {
             const cartBox = document.getElementById('cart-items');
             const totalBox = document.getElementById('total-amount');
-
             if (cart.length === 0) {
                 cartBox.innerHTML = `<p class="empty-msg">السلة فارغة حالياً، اختر منتجاتك للبدء.</p>`;
                 totalBox.innerText = "0 ج.م";
                 return;
             }
-
             let total = 0;
             cartBox.innerHTML = cart.map(item => {
                 total += item.price * item.qty;
@@ -353,32 +334,27 @@
                             <small>${item.price > 0 ? (item.price * item.qty) + ' ج.م' : 'خدمة كاش'}</small>
                         </div>
                         <div class="qty-controls">
-                            <button onclick="updateQty(${item.id}, -1)">-</button>
+                            <button onclick="updateQty('${item.id}', -1)">-</button>
                             <span>${item.qty}</span>
-                            <button onclick="updateQty(${item.id}, 1)">+</button>
+                            <button onclick="updateQty('${item.id}', 1)">+</button>
                         </div>
                     </div>
                 `;
             }).join('');
-
             totalBox.innerText = `${total} ج.م`;
         }
 
         function toggleAdminPanel() {
             const panel = document.getElementById('admin-panel');
-
             if (!panel.classList.contains('hidden')) {
                 panel.classList.add('hidden');
                 return;
             }
-
             if (!isAdminLoggedIn) {
                 const user = prompt("أدخل اسم المستخدم للوحة التحكم:");
                 if (user === null) return;
-
                 const pass = prompt("أدخل كلمة السر:");
                 if (pass === null) return;
-
                 if (user === ADMIN_USERNAME && pass === ADMIN_PASSWORD) {
                     isAdminLoggedIn = true;
                     alert("تم تسجيل الدخول بنجاح! 🔓");
@@ -387,7 +363,6 @@
                     return;
                 }
             }
-
             panel.classList.remove('hidden');
             renderAdminList();
         }
@@ -399,55 +374,91 @@
                     <span>${p.name}</span>
                     <div>
                         <input type="number" id="price-input-${p.id}" value="${p.price}">
-                        <button class="delete-btn" onclick="deleteProduct(${p.id})">حذف 🗑️</button>
+                        <button class="delete-btn" onclick="deleteProduct('${p.id}')">حذف 🗑️</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        function addNewProduct(e) {
-            e.preventDefault();
-            const name = document.getElementById('new-p-name').value;
+        function addNewProduct() {
+            const name = document.getElementById('new-p-name').value.trim();
             const price = parseFloat(document.getElementById('new-p-price').value) || 0;
             const category = document.getElementById('new-p-cat').value;
             const fileInput = document.getElementById('new-p-file');
             const file = fileInput.files[0];
 
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const newProduct = {
-                        id: Date.now(),
-                        name: name,
-                        price: price,
-                        category: category,
-                        img: e.target.result
-                    };
-
-                    products.push(newProduct);
-                    db.ref('products').set(products);
-                    
-                    document.querySelector('.add-product-form').reset();
-                    alert('تمت إضافة المنتج بالصورة بنجاح وحفظه أونلاين! ✨');
-                };
-                reader.readAsDataURL(file);
+            if (!name || isNaN(price) || !file) {
+                alert("يرجى ملء جميع الحقول واختيار صورة للمنتج!");
+                return;
             }
+
+            const submitBtn = document.getElementById('add-submit-btn');
+            submitBtn.innerText = "جاري ضغط الصورة والرفع...";
+            submitBtn.disabled = true;
+
+            compressImage(file, 300, 0.5, function(compressedBase64) {
+                const newProduct = {
+                    name: name,
+                    price: price,
+                    category: category,
+                    img: compressedBase64
+                };
+
+                db.ref('products').push(newProduct).then(() => {
+                    document.getElementById('addProductForm').reset();
+                    submitBtn.innerText = "إضافة المنتج ➕";
+                    submitBtn.disabled = false;
+                    alert('تمت إضافة المنتج بنجاح أونلاين! ✨');
+                }).catch(err => {
+                    alert('حدث خطأ أثناء الرفع: ' + err.message);
+                    submitBtn.innerText = "إضافة المنتج ➕";
+                    submitBtn.disabled = false;
+                });
+            });
+        }
+
+        function compressImage(file, maxWidth, quality, callback) {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function(event) {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    callback(canvas.toDataURL('image/jpeg', quality));
+                };
+            };
         }
 
         function deleteProduct(id) {
             if(confirm('هل أنت تأكد من حذف هذا المنتج؟')) {
-                products = products.filter(p => p.id !== id);
-                db.ref('products').set(products);
+                db.ref('products/' + id).remove();
             }
         }
 
         function saveNewPrices() {
             products.forEach(p => {
                 const input = document.getElementById(`price-input-${p.id}`);
-                if (input) p.price = parseFloat(input.value) || 0;
+                if (input) {
+                    const newPrice = parseFloat(input.value) || 0;
+                    if(newPrice !== p.price) {
+                        db.ref('products/' + p.id).update({ price: newPrice });
+                    }
+                }
             });
-            db.ref('products').set(products);
-            alert('تم حفظ التغييرات بنجاح للجميع! 🎉');
+            alert('تم حفظ الأسعار الجديدة بنجاح! 🎉');
         }
 
         function refreshMainView() {
@@ -458,19 +469,15 @@
         function sendOrderToWhatsApp(e) {
             e.preventDefault();
             if (cart.length === 0) return alert("اختر منتجات أولاً بالسلة!");
-
             const name = document.getElementById('cust-name').value;
             const phone = document.getElementById('cust-phone').value;
             const address = document.getElementById('cust-address').value;
             const notes = document.getElementById('cust-notes').value;
-
             let text = `🛒 *طلب جديد - سوبر ماركت أولاد العمدة*\n👤 *الاسم:* ${name}\n📞 *الهاتف:* ${phone}\n📍 *العنوان:* ${address}\n`;
             if(notes) text += `📝 *ملاحظات:* ${notes}\n`;
             text += `-----------------------------------\n📦 *الطلبات:*\n`;
-
             cart.forEach(i => { text += `- ${i.name} (عدد: ${i.qty})\n`; });
             text += `-----------------------------------\n💰 *الإجمالي:* ${document.getElementById('total-amount').innerText}`;
-
             window.open(`https://wa.me/${MY_WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`, '_blank');
         }
     </script>
